@@ -1,0 +1,24 @@
+These are required tabs for the local connection.
+
+CREATE TABLE `report` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) DEFAULT NULL,
+  `doe` datetime DEFAULT NULL,
+  `dlu` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=162 DEFAULT CHARSET=latin1;
+
+
+CREATE TABLE `dataquery` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `report_id` int(10) unsigned NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `sql` mediumtext,
+  `is_visible` tinyint(1) NOT NULL,
+  `connection` varchar(255) DEFAULT NULL,
+  `doe` datetime DEFAULT NULL,
+  `dlu` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `report_id` (`report_id`),
+  CONSTRAINT `r_dataquery_ibfk_1` FOREIGN KEY (`report_id`) REFERENCES `report` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=366 DEFAULT CHARSET=latin1;
