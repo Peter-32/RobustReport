@@ -15,7 +15,8 @@ def index():
         cur = local_cnx.cursor()
         cur.execute("SELECT name from report")
         rows = cur.fetchall()
-
+    except Exception as e:
+        print(e)
     finally:
         local_cnx.close()
         return render_template("index.html",rows=rows)
@@ -36,10 +37,12 @@ def new_report():
         local_cnx.commit()
 
         for i in range(1,int(result.get("query_count"))+1):
-            cur.execute("""INSERT INTO dataquery (report_id, name, sql_, is_visible, connection, doe, dlu) SELECT max(id),'{}', '{}', '{}', '{}', now(), now() from report""".format(result.get("query"+str(i)+"_name"), result.get("query"+str(i)+"_sql"), checkbox[i], result.get("query"+str(i)+"_connection")))
+            cur.execute("""INSERT INTO dataquery (report_id, name, sql_, is_visible, connection, doe, dlu) SELECT max(id),'{}', '{}', '{}', '{}', now(), now() from report""".format(result.get("query"+str(i)+"_name"), result.get("query"+str(i)+"_sql"), checkbox_values[i], result.get("query"+str(i)+"_connection")))
             local_cnx.commit()
     except mysql.connector.Error as err:
         print("Something went wrong: {}".format(err))
+    except Exception as e:
+        print(e)
     finally:
         local_cnx.close()
         return redirect("/")

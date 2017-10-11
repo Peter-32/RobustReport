@@ -3,7 +3,7 @@ function addQuery() {
   i = i + 1
   var str = `          <fieldset class="pure-group query`+i+`">
     <input type="text" class="pure-input-1-2" placeholder="A title" name="query`+i+`_name" value="test title">
-    <textarea rows="12" class="pure-input-1-2" placeholder="Put SQL here" name="query1`+i+`_sql">test SQL</textarea>
+    <textarea rows="12" class="pure-input-1-2" placeholder="Put SQL here" name="query`+i+`_sql">test SQL</textarea>
     <label for="visible_checkbox" class="pure-checkbox" id="visible_checkbox_label">
       Visible:</label>
       <input id="visible_checkbox" type="checkbox" value="" name="query`+i+`_visible_checkbox" checked>
