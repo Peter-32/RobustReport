@@ -22,9 +22,10 @@ function addQuery() {
         </select>
       </div>
     </fieldset>
-    <div class="pure-button pure-input-1-3 pure-button-primary center_button" onclick="addQuery()">+ Query</div><br><br>
     <div id="query`+(i+1)+`"></div>
     `
     document.getElementById("query"+i).innerHTML = str
+    document.getElementById("query_count").value = i
+
     //alert(str)
 }

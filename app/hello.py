@@ -1,47 +1,45 @@
 import sys
-import pandas as pd
-import pandasql as ps
+#import pandas as pd
+#import pandasql as ps
 from flask import Flask, render_template, redirect, request
+import mysql.connector
 sys.path.append("/Users/peterjmyers/Documents/Projects/GitHub/RobustReport/app")
-from lib.SQL_df_util.SQL_df_util import *
-from lib.connection.connection import *
-from lib.file_util.file_util import *
-from lib.connection.config import *
 app = Flask(__name__)
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0 # Remove this line in production
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0 # TODO: Remove this line in production
 @app.route('/')
 @app.route('/index')
 def index():
-    user = {'nickname': 'Miguel'}
-    return render_template("index.html",title="Home",user=user)
+    rows = []
+    local_cnx = mysql.connector.connect(user= "root", password= "", database="robust_report", host= "localhost", port= 3306)
+    try:
+        cur = local_cnx.cursor()
+        cur.execute("SELECT name from report")
+        rows = cur.fetchall()
+
+    finally:
+        local_cnx.close()
+        return render_template("index.html",rows=rows)
 
 @app.route('/new', methods=['POST'])
 def new_report():
     result = request.form
-    local_cnx, local_cnx2  = open_db_connections([config_localhost, config_localhost])
+    checkbox_values = [0]
+    for i in range(1,int(result.get("query_count"))+1):
+        if "query"+str(i)+"_visible_checkbox" in result:
+            checkbox_values.append(1)
+        else:
+            checkbox_values.append(0)
+    local_cnx  = mysql.connector.connect(user= "root", password= "", database="robust_report", host= "localhost", port= 3306)
     try:
-        insert_sql_statement1 = "INSERT INTO report (name, doe, dlu) values ('{}', now(), now())".format(result.get("report_name"))
-        save_to_db(insert_sql_statement1, local_cnx)
-        max_report_id = _query_for_max_report_id()
-        print("HI")
-        print(max_report_id)
-        insert_sql_statement2 = "INSERT INTO dataquery (report_id, name, sql, is_visible, connection, doe, dlu) VALUES ({},'{}', '{}', '{}', '{}', now(), now())".format(max_report_id, result.get("query1_name"), result.get("query1_sql"), result.get("query1_visible_checkbox"), result.get("query1_connection"))
-        save_to_db(insert_sql_statement2, local_cnx)
+        cur = local_cnx.cursor()
+        cur.execute("""INSERT INTO report (name, doe, dlu) values ('{}', now(), now())""".format(result.get("report_name")))
+        local_cnx.commit()
+
+        for i in range(1,int(result.get("query_count"))+1):
+            cur.execute("""INSERT INTO dataquery (report_id, name, sql_, is_visible, connection, doe, dlu) SELECT max(id),'{}', '{}', '{}', '{}', now(), now() from report""".format(result.get("query"+str(i)+"_name"), result.get("query"+str(i)+"_sql"), checkbox[i], result.get("query"+str(i)+"_connection")))
+            local_cnx.commit()
     except mysql.connector.Error as err:
         print("Something went wrong: {}".format(err))
     finally:
-        close_db_connections([local_cnx, local_cnx2])
+        local_cnx.close()
         return redirect("/")
-
-def _query_for_max_report_id():
-    try:
-        print("AAAAAAAA")
-        select_statement1 = "SELECT MAX(id) AS report_id from report"
-        print("AAAAAAAA1")
-        df = pd.read_sql(select_statement1, local_cnx)
-        print("AAAAAAAA2")
-        report_id = get_fields_from_single_row_df(df, "report_id")
-        return report_id
-    except: # catch *all* exceptions
-        e = sys.exc_info()[0]
-        write_to_page( "<p>Error: %s</p>" % e )

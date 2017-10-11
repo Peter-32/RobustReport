@@ -11,3 +11,7 @@ textarea {
   display : block;
 
 }
+
+.hidden {
+  visibility:hidden;
+}
